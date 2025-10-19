@@ -1,6 +1,6 @@
 'use client'
 import { Memo } from "@/types/memo";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Edit2, Trash2, Pin } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -121,24 +121,26 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen p-6 sm:p-12 bg-gray-50 flex flex-col sm:flex-row gap-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {showDeleteModal && (
         <div
           onClick={() => setShowDeleteModal(false)}
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+          className="fixed inset-0 flex items-center justify-center z-50 bg-black/50"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white p-6 rounded-lg shadow-lg w-80"
+            className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-80 slide-in"
           >
-            <h3 className="text-lg font-bold mb-4 text-gray-800">
-              本当に削除しますか？
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              メモを削除しますか？
             </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              この操作は取り消せません。
+            </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="bg-gray-300 text-gray-700 py-1 px-3 rounded hover:bg-gray-400"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               >
                 キャンセル
               </button>
@@ -149,7 +151,7 @@ export default function Home() {
                   }
                   setShowDeleteModal(false);
                 }}
-                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
               >
                 削除
               </button>
@@ -157,228 +159,278 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/* 左カラム：フォーム */}
-      <div className="sm:w-1/3 w-full flex flex-col gap-6">
-        <h1 className="text-2xl font-bold text-gray-800">📝 My Memo App</h1>
-        <form
-          onSubmit={handleAddMemo}
-          className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-4"
-        >
-          <input
-            type="text"
-            placeholder="タイトル"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (titleError) setTitleError("");
-            }}
-            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {titleError && <p className="text-red-500 text-sm">{titleError}</p>}
-          <textarea
-            placeholder="本文"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="">カテゴリーを選択</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition"
-          >
-            追加
-          </button>
-        </form>
-        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mt-6">
-          <h3 className="text-lg font-semibold mb-2 text-gray-800">メモ表示フィルタ</h3>
-          <div className="flex flex-wrap gap-2">
-            {["全て", ...categories].map((category) => (
-              <button
-                key={category}
-                onClick={() => setFilterCategory(category)}
-                className={`px-3 py-1 rounded-full text-sm ${filterCategory === category ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-                  }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+      
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            メモアプリ
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            思いついたことをすぐにメモ
+          </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mt-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-            📂 カテゴリー管理
-          </h3>
-
-          <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              placeholder="新しいカテゴリー名を入力"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-            />
-            <button
-              onClick={() => {
-                if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-                  setCategories([...categories, newCategory.trim()]);
-                  setNewCategory("");
-                }
-              }}
-              disabled={!newCategory.trim()}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg transition font-medium ${newCategory.trim()
-                ? "bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
-                : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                }`}
-            >
-              <Plus size={18} />
-              追加
-            </button>
-          </div>
-          <div className="border-t border-gray-100 pt-3">
-            {categories.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <div
-                    key={category}
-                    className="flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full text-sm"
-                  >
-                    <span className="truncate max-w-[100px]">{category}</span>
-                    <button
-                      onClick={() => deleteCategory(category)}
-                      className="hover:text-red-500 transition flex items-center justify-center"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-sm">まだカテゴリーがありません。</p>
-            )}
-            <p className="text-sm text-gray-500 mt-2 italic">
-              例：「自己分析」「企業研究」「ES対策」など
-            </p>
-          </div>
-        </div>
-      </div>
-      {/* メモ表示 */}
-      <div className="sm:w-2/3 w-full flex flex-col gap-4">
-        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mt-4">
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">🔍 メモ検索</h3>
-          <input
-            type="text"
-            placeholder="タイトルや本文で検索..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-          />
-        </div>
-        <select
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
-          className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          <option value="newest">新しい順</option>
-          <option value="oldest">古い順</option>
-        </select>
-        {sortedMemos
-          .map((memo) => (
-            <div key={memo.id} className="bg-white p-5 rounded-xl shadow-md flex flex-col gap-2">
-              {memo.id === editingId ? (
-                <>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 左カラム：フォーム */}
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                新しいメモ
+              </h2>
+              <form onSubmit={handleAddMemo} className="space-y-4">
+                <div>
                   <input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="border p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    type="text"
+                    placeholder="タイトル"
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      if (titleError) setTitleError("");
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
-                  <textarea
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    className="border p-2 w-full rounded-md h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                  <select
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value={editCategory}>{editCategory}</option>
-                    {categories
-                      .filter((category) => category !== editCategory)
-                      .map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                  </select>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => saveEdit(memo.id)}
-                      className="bg-green-500 text-white py-1 px-3 rounded-md hover:bg-green-600 text-sm"
+                  {titleError && <p className="text-red-500 text-sm mt-1">{titleError}</p>}
+                </div>
+                <textarea
+                  placeholder="内容"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent h-24 resize-none"
+                />
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">カテゴリーを選択</option>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="submit"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                >
+                  メモを追加
+                </button>
+              </form>
+            </div>
+
+            {/* カテゴリー管理 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                カテゴリー管理
+              </h2>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="新しいカテゴリー"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <button
+                  onClick={() => {
+                    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+                      setCategories([...categories, newCategory.trim()]);
+                      setNewCategory("");
+                    }
+                  }}
+                  disabled={!newCategory.trim()}
+                  className={`flex items-center gap-1 px-4 py-2 rounded-md font-medium transition-colors ${
+                    newCategory.trim()
+                      ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  <Plus size={16} />
+                  追加
+                </button>
+              </div>
+              {categories.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category) => (
+                    <div
+                      key={category}
+                      className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm"
                     >
-                      保存
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="bg-gray-300 text-gray-700 py-1 px-3 rounded-md hover:bg-gray-400 text-sm"
-                    >
-                      キャンセル
-                    </button>
-                  </div>
-                </>
+                      <span>{category}</span>
+                      <button
+                        onClick={() => deleteCategory(category)}
+                        className="hover:text-red-500 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <>
-                  <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    {memo.title}
-                    {memo.category && (
-                      <span className="text-sm text-white bg-blue-500 px-2 py-0.5 rounded-full">
-                        {memo.category}
-                      </span>
-                    )}
-                  </h3>
-                  <p className="text-gray-700 mt-1 whitespace-pre-line">{memo.content}</p>
-                  <span className="text-gray-400 text-sm mt-2 block">
-                    {new Date(memo.createdAt).toLocaleString()}
-                  </span>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => startEdit(memo)}
-                      className="bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 text-sm"
-                    >
-                      編集
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDeleteTargetId(memo.id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 text-sm"
-                    >
-                      削除
-                    </button>
-                    <button
-                      onClick={() => togglePin(memo.id)}
-                      className={`text-sm px-2 py-1 rounded ${memo.pinned ? "bg-yellow-400 text-white" : "bg-gray-200 text-gray-800"
-                        }`}
-                    >
-                      {memo.pinned ? "📌 ピン中" : "📍 ピン"}
-                    </button>
-                  </div>
-                </>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  カテゴリーがありません
+                </p>
               )}
             </div>
-          ))}
+
+            {/* フィルター */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                フィルター
+              </h2>
+              <div className="space-y-2">
+                {["全て", ...categories].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setFilterCategory(cat)}
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      filterCategory === cat
+                        ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 右カラム：メモ一覧 */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+              <div className="flex gap-4 items-center">
+                <input
+                  type="text"
+                  placeholder="検索..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="newest">新しい順</option>
+                  <option value="oldest">古い順</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {sortedMemos.map((memo) => (
+                <div
+                  key={memo.id}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 slide-in"
+                >
+                  {memo.id === editingId ? (
+                    <div className="space-y-4">
+                      <input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent h-24 resize-none"
+                      />
+                      <select
+                        value={editCategory}
+                        onChange={(e) => setEditCategory(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      >
+                        <option value={editCategory}>{editCategory}</option>
+                        {categories
+                          .filter((category) => category !== editCategory)
+                          .map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))}
+                      </select>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => saveEdit(memo.id)}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors"
+                        >
+                          保存
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-md transition-colors"
+                        >
+                          キャンセル
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg mb-1">
+                            {memo.title}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Date(memo.createdAt).toLocaleDateString('ja-JP')}
+                            </span>
+                            {memo.category && (
+                              <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
+                                {memo.category}
+                              </span>
+                            )}
+                            {memo.pinned && (
+                              <span className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 rounded-full">
+                                ピン留め
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap mb-4">
+                        {memo.content}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEdit(memo)}
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                        >
+                          <Edit2 size={14} />
+                          編集
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDeleteTargetId(memo.id);
+                            setShowDeleteModal(true);
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md transition-colors"
+                        >
+                          <Trash2 size={14} />
+                          削除
+                        </button>
+                        <button
+                          onClick={() => togglePin(memo.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                        >
+                          <Pin size={14} />
+                          {memo.pinned ? "ピン解除" : "ピン留め"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+              {sortedMemos.length === 0 && (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <p>メモがありません</p>
+                  <p className="text-sm mt-2">新しいメモを作成してください</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
